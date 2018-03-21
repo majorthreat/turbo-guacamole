@@ -1,2 +1,2 @@
-# turbo-guacamole
-Lab 5 for Anne Sullivan
+# JSPlatformer
+JS Platformer for DIG 3480C
