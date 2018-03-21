@@ -219,7 +219,7 @@ Player.prototype.moveY = function(step, level, keys) {
 
   //Lava kills
   if (obstacle == "lava"){
-    this.pos = new Vector(2,3);
+    this.pos = new Vector(10,0);
   }
 
   //THe floor is also an obstacle -- can only jump if player is touching an obstacle/wall
