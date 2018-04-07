@@ -1,0 +1,29 @@
+.background    { background: rgb(43, 66, 62);
+                 table-layout: fixed;
+                 border-spacing: 0;}
+.background td { padding: 0;          }
+.lava          { background: rgb(105, 72, 115); }
+.wall          { background: rgb(22, 38, 43);   }
+
+.actor  { position: absolute;  }
+.coin   { background-image: url("images/potion.png");
+          background-size: 20px 20px;}
+.player { background-image: url("images/scientist.png");
+          background-size: 18px 30px;}
+.entrance { background: rgb(50, 137, 131);}
+.exit    {background: rgb(50, 137, 131);}
+.turbo{ background-image: url("images/coffee.png");
+        background-size: 24px 24px;}
+.game {
+  overflow: hidden;
+  max-width: 600px;
+  max-height: 450px;
+  position: relative;
+}
+
+.lost .player {
+  background: black;
+}
+.won .player {
+  box-shadow: -2px -2px 4px rgb(192, 229, 200), 2px -2px 4px rgb(192, 229, 200);
+}
