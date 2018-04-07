@@ -2,7 +2,8 @@
 var actorChars = {
   "@": Player,
   "o": Coin, // A coin will wobble up and down
-  "=": Lava, "|": Lava, "v": Lava
+  "=": Lava, "|": Lava, "v": Lava,
+  "*": turbo
 };
 
 function Level(plan) {
@@ -38,6 +39,11 @@ function Level(plan) {
       // Because there is a third case (space ' '), use an "else if" instead of "else"
       else if (ch == "!")
         fieldType = "lava";
+	    else if (ch == "#")
+		    fieldType = "entrance";
+      else if (ch == "y")
+        fieldType = "exit";
+
 
       // "Push" the fieldType, which is a string, onto the gridLine array (at the end).
       gridLine.push(fieldType);
@@ -83,11 +89,19 @@ Player.prototype.type = "player";
 // Add a new actor type as a class
 function Coin(pos) {
   this.basePos = this.pos = pos.plus(new Vector(0.2, 0.1));
-  this.size = new Vector(0.6, 0.6);
+  this.size = new Vector(1,1);
   // Make it go back and forth in a sine wave.
   this.wobble = Math.random() * Math.PI * 2;
 }
 Coin.prototype.type = "coin";
+
+function turbo(pos) {
+  this.basePos = this.pos = pos.plus(new Vector(0.2, 0.1));
+  this.size = new Vector(1,1);
+  // Make it go back and forth in a sine wave.
+  this.wobble = Math.random() * Math.PI * 2;
+}
+turbo.prototype.type = "turbo";
 
 // Lava is initialized based on the character, but otherwise has a
 // size and position
@@ -107,6 +121,18 @@ function Lava(pos, ch) {
   }
 }
 Lava.prototype.type = "lava";
+
+function entrance(pos, ch) {
+  this.pos = pos;
+  this.size = new Vector(1, 1);
+}
+entrance.prototype.type = "entrance";
+
+function exit(pos, ch) {
+  this.pos = pos;
+  this.size = new Vector(1, 1);
+}
+entrance.prototype.type = "exit";
 
 // Helper function to easily create an element of a type provided
 function elt(name, className) {
@@ -283,6 +309,25 @@ Lava.prototype.act = function(step, level) {
     this.speed = this.speed.times(-1);
 };
 
+entrance.prototype.act = function(step, level) {
+  var newPos = this.pos.plus(this.speed.times(step));
+  if (!level.obstacleAt(newPos, this.size))
+    this.pos = newPos;
+  else if (this.repeatPos)
+    this.pos = this.repeatPos;
+  else
+    this.speed = this.speed.times(-1);
+};
+
+exit.prototype.act = function(step, level) {
+  var newPos = this.pos.plus(this.speed.times(step));
+  if (!level.obstacleAt(newPos, this.size))
+    this.pos = newPos;
+  else if (this.repeatPos)
+    this.pos = this.repeatPos;
+  else
+    this.speed = this.speed.times(-1);
+};
 
 var maxStep = 0.05;
 
@@ -294,6 +339,15 @@ Coin.prototype.act = function(step) {
   this.pos = this.basePos.plus(new Vector(0, wobblePos));
 };
 
+var maxStep = 0.05;
+
+var wobbleSpeed = 8, wobbleDist = 0.07;
+
+turbo.prototype.act = function(step) {
+  this.wobble += step * wobbleSpeed;
+  var wobblePos = Math.sin(this.wobble) * wobbleDist;
+  this.pos = this.basePos.plus(new Vector(0, wobblePos));
+};
 
 var maxStep = 0.05;
 
@@ -329,6 +383,12 @@ Player.prototype.moveY = function(step, level, keys) {
   // The floor is also an obstacle -- only allow players to
   // jump if they are touching some obstacle.
   if (obstacle) {
+	if (obstacle == "entrance"){
+		this.pos = this.pos.plus (new Vector (48,-14));
+	}
+  if (obstacle == "exit"){
+		this.pos = this.pos.plus (new Vector (-43,6));
+	}
     level.playerTouched(obstacle);
     if (keys.up && this.speed.y > 0)
       this.speed.y = -jumpSpeed;
@@ -336,6 +396,7 @@ Player.prototype.moveY = function(step, level, keys) {
       this.speed.y = 0;
   } else {
     this.pos = newPos;
+
   }
 };
 
@@ -361,6 +422,7 @@ Level.prototype.playerTouched = function(type, actor) {
   if (type == "lava" && this.status == null) {
     this.status = "lost";
     this.finishDelay = 1;
+	playerXSpeed = 7;
   } else if (type == "coin") {
     this.actors = this.actors.filter(function(other) {
       return other != actor;
@@ -372,6 +434,16 @@ Level.prototype.playerTouched = function(type, actor) {
       this.status = "won";
       this.finishDelay = 1;
     }
+  } else if (type == "turbo") {
+    this.actors = this.actors.filter(function(other) {
+      return other != actor;
+    });
+    if (!this.actors.some(function(actor) {
+           return actor.type == "turbo";
+         })) {
+			 playerXSpeed = 20;
+		 }
+
   }
 };
 
